@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
     for (const file of fotoFiles) {
       if (file.size > 0) {
         const blob = await put(`klussen/${Date.now()}-${file.name}`, file, {
-          access: "private",
+          access: "public",
         });
         fotoUrls.push(blob.url);
       }
