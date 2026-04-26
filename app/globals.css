@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --orange: #FF5C2E;
+  --orange-dark: #E5461C;
+  --orange-glow: rgba(255, 92, 46, 0.25);
+  --bg: #0C0C0F;
+  --surface: #16161B;
+  --surface2: #1E1E26;
+  --text: #F0F0F5;
+  --muted: #72728A;
+  --border: #28282F;
+  --green: #22C55E;
+}
+
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #444; }
+
+/* Focus ring override */
+*:focus-visible {
+  outline: 2px solid var(--orange);
+  outline-offset: 2px;
+}
