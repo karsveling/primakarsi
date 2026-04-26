@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDropzone } from "react-dropzone";
@@ -52,6 +51,7 @@ export default function KlusForm({ prefill, onSuccess, onBack }: Props) {
   const [nogEen, setNogEen] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Photo dropzone
   const onDrop = useCallback((accepted: File[]) => {
@@ -60,6 +60,7 @@ export default function KlusForm({ prefill, onSuccess, onBack }: Props) {
       setPhotos((prev) => [...prev, { url, file }]);
     });
   }, []);
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: { "image/*": [] },
@@ -92,6 +93,7 @@ export default function KlusForm({ prefill, onSuccess, onBack }: Props) {
   async function handleSubmit() {
     if (!validate()) return;
     setLoading(true);
+    setSubmitError(null);
 
     const fd = new FormData();
     fd.append("category", category);
@@ -109,11 +111,22 @@ export default function KlusForm({ prefill, onSuccess, onBack }: Props) {
       const res = await fetch("/api/klus", { method: "POST", body: fd });
       if (!res.ok) throw new Error("api error");
     } catch {
-      // In test mode we just continue — no hard failure shown
+      setLoading(false);
+      setSubmitError(
+        "Er ging iets mis bij het versturen. Controleer je verbinding en probeer het opnieuw."
+      );
+      scrollRef.current?.scrollTo({ top: 999999, behavior: "smooth" });
+      return;
     }
 
     const personal: PersonalData = {
-      naam, telefoon, email, straat, huisnummer, postcode, stad,
+      naam,
+      telefoon,
+      email,
+      straat,
+      huisnummer,
+      postcode,
+      stad,
     };
     onSuccess(personal, nogEen);
   }
@@ -123,8 +136,7 @@ export default function KlusForm({ prefill, onSuccess, onBack }: Props) {
       errors[field]
         ? "border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)]"
         : "border-[var(--border)] focus:border-[var(--orange)] focus:shadow-[0_0_0_3px_rgba(255,92,46,0.12)]"
-    }`
-    + " bg-[var(--surface)] text-[var(--text)] placeholder:text-[var(--muted)]";
+    }` + " bg-[var(--surface)] text-[var(--text)] placeholder:text-[var(--muted)]";
 
   return (
     <motion.div
@@ -162,7 +174,6 @@ export default function KlusForm({ prefill, onSuccess, onBack }: Props) {
       {/* Scrollable body */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto flex justify-center">
         <div className="w-full max-w-xl px-5 pt-7 pb-24">
-
           {/* ── SECTIE 1 ── */}
           <Section delay={0.1} label="01 — De klus">
             {/* Category pills */}
@@ -192,7 +203,7 @@ export default function KlusForm({ prefill, onSuccess, onBack }: Props) {
               <Label required>Beschrijf je klus</Label>
               <textarea
                 className={inputCls("omschrijving") + " resize-y min-h-[110px] leading-relaxed"}
-                placeholder="Bijv: Ik wil een nieuwe badkamerkraan laten plaatsen. De oude lekt al een tijdje en het metselwerk rondom de douche is ook aan vervanging toe..."
+                placeholder="Bijv: Ik wil een nieuwe badkamerkraan laten plaatsen..."
                 value={omschrijving}
                 onChange={(e) => setOmschrijving(e.target.value)}
               />
@@ -201,7 +212,10 @@ export default function KlusForm({ prefill, onSuccess, onBack }: Props) {
 
             {/* Photo dropzone */}
             <div>
-              <Label>Foto's toevoegen <span style={{ color: "var(--muted)", fontWeight: 400 }}>(optioneel)</span></Label>
+              <Label>
+                Foto&apos;s toevoegen{" "}
+                <span style={{ color: "var(--muted)", fontWeight: 400 }}>(optioneel)</span>
+              </Label>
               <div
                 {...getRootProps()}
                 className="mt-1.5 border-2 border-dashed rounded-2xl p-7 text-center cursor-pointer transition-all"
@@ -247,50 +261,82 @@ export default function KlusForm({ prefill, onSuccess, onBack }: Props) {
             <div className="grid grid-cols-2 gap-3 mb-3.5">
               <div>
                 <Label required>Naam</Label>
-                <input className={inputCls("naam")} type="text" placeholder="Jan de Vries"
-                  value={naam} onChange={(e) => setNaam(e.target.value)} />
+                <input
+                  className={inputCls("naam")}
+                  type="text"
+                  placeholder="Jan de Vries"
+                  value={naam}
+                  onChange={(e) => setNaam(e.target.value)}
+                />
                 <FieldError msg={errors.naam} />
               </div>
               <div>
                 <Label required>Telefoon</Label>
-                <input className={inputCls("telefoon")} type="tel" placeholder="06 12345678"
-                  value={telefoon} onChange={(e) => setTelefoon(e.target.value)} />
+                <input
+                  className={inputCls("telefoon")}
+                  type="tel"
+                  placeholder="06 12345678"
+                  value={telefoon}
+                  onChange={(e) => setTelefoon(e.target.value)}
+                />
                 <FieldError msg={errors.telefoon} />
               </div>
             </div>
-
             <div className="mb-3.5">
               <Label required>E-mailadres</Label>
-              <input className={inputCls("email")} type="email" placeholder="jan@voorbeeld.nl"
-                value={email} onChange={(e) => setEmail(e.target.value)} />
+              <input
+                className={inputCls("email")}
+                type="email"
+                placeholder="jan@voorbeeld.nl"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
               <FieldError msg={errors.email} />
             </div>
-
             <div className="grid gap-3 mb-3.5" style={{ gridTemplateColumns: "2fr 1fr" }}>
               <div>
                 <Label required>Straat</Label>
-                <input className={inputCls("straat")} type="text" placeholder="Keizersgracht"
-                  value={straat} onChange={(e) => setStraat(e.target.value)} />
+                <input
+                  className={inputCls("straat")}
+                  type="text"
+                  placeholder="Keizersgracht"
+                  value={straat}
+                  onChange={(e) => setStraat(e.target.value)}
+                />
                 <FieldError msg={errors.straat} />
               </div>
               <div>
                 <Label>Nr.</Label>
-                <input className={inputCls("")} type="text" placeholder="142B"
-                  value={huisnummer} onChange={(e) => setHuisnummer(e.target.value)} />
+                <input
+                  className={inputCls("")}
+                  type="text"
+                  placeholder="142B"
+                  value={huisnummer}
+                  onChange={(e) => setHuisnummer(e.target.value)}
+                />
               </div>
             </div>
-
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label required>Postcode</Label>
-                <input className={inputCls("postcode")} type="text" placeholder="1017 EK"
-                  value={postcode} onChange={(e) => setPostcode(e.target.value)} />
+                <input
+                  className={inputCls("postcode")}
+                  type="text"
+                  placeholder="1017 EK"
+                  value={postcode}
+                  onChange={(e) => setPostcode(e.target.value)}
+                />
                 <FieldError msg={errors.postcode} />
               </div>
               <div>
                 <Label required>Stad</Label>
-                <input className={inputCls("stad")} type="text" placeholder="Amsterdam"
-                  value={stad} onChange={(e) => setStad(e.target.value)} />
+                <input
+                  className={inputCls("stad")}
+                  type="text"
+                  placeholder="Amsterdam"
+                  value={stad}
+                  onChange={(e) => setStad(e.target.value)}
+                />
                 <FieldError msg={errors.stad} />
               </div>
             </div>
@@ -325,6 +371,25 @@ export default function KlusForm({ prefill, onSuccess, onBack }: Props) {
               </div>
             </button>
 
+            {/* Submit error */}
+            <AnimatePresence>
+              {submitError && (
+                <motion.div
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="mt-4 px-4 py-3.5 rounded-xl text-[13px] font-medium leading-relaxed"
+                  style={{
+                    background: "rgba(239,68,68,0.10)",
+                    color: "#ff6b6b",
+                    border: "1px solid rgba(239,68,68,0.25)",
+                  }}
+                >
+                  ⚠️ {submitError}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             {/* Submit */}
             <button
               onClick={handleSubmit}
@@ -345,15 +410,13 @@ export default function KlusForm({ prefill, onSuccess, onBack }: Props) {
               )}
             </button>
           </Section>
-
         </div>
       </div>
     </motion.div>
   );
 }
 
-// ── Sub-components ──────────────────────────────────────────────
-
+// ── Sub-components ────────────────────────────────────────────────
 function Section({
   children,
   label,
