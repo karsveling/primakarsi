@@ -1,5 +1,4 @@
 "use client";
-
 import { motion } from "framer-motion";
 
 interface Props {
@@ -30,8 +29,7 @@ export default function LandingScreen({ onStart }: Props) {
         style={{
           width: 700,
           height: 700,
-          background:
-            "radial-gradient(circle,rgba(255,92,46,0.07) 0%,transparent 65%)",
+          background: "radial-gradient(circle,rgba(255,92,46,0.07) 0%,transparent 65%)",
           top: "50%",
           left: "50%",
           transform: "translate(-50%,-50%)",
@@ -65,8 +63,7 @@ export default function LandingScreen({ onStart }: Props) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.7 }}
         >
-          Jouw klus.
-          <br />
+          Jouw klus. <br />
           <em className="not-italic" style={{ color: "var(--orange)" }}>
             Geregeld.
           </em>
@@ -80,8 +77,8 @@ export default function LandingScreen({ onStart }: Props) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.32, duration: 0.6 }}
         >
-          Beschrijf je bouwklus, laat je gegevens achter en PrimaKarsi regelt de
-          rest. Snel, vakkundig en zonder gedoe.
+          Beschrijf je bouwklus, laat je gegevens achter en PrimaKarsi regelt de rest.
+          Snel, vakkundig en zonder gedoe.
         </motion.p>
 
         {/* CTA */}
@@ -120,7 +117,7 @@ export default function LandingScreen({ onStart }: Props) {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6, duration: 0.6 }}
         >
-          {["Geen gedoe", "Vaste vakmannen", "Amsterdam & omgeving"].map(
+          {["Geen gedoe", "Vaste vakmannen", "Amsterdam & Den Haag & omgeving"].map(
             (item) => (
               <div
                 key={item}
